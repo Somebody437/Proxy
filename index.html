@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pages Proxy Browser</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Pages Proxy Browser</h1>
+    <div id="controls">
+      <input id="url" type="url" placeholder="https://example.com/" />
+      <button id="go">Go</button>
+      <input id="proxy" type="text" placeholder="Proxy base (e.g. https://your-proxy.example.com/fetch?url=)" />
+      <button id="clear">Clear</button>
+    </div>
+    <div id="status"></div>
+  </header>
+
+  <main>
+    <iframe id="viewer" sandbox="allow-scripts allow-forms"></iframe>
+  </main>
+
+  <footer>
+    <small>Default proxy used: <code>https://api.allorigins.win/raw?url=</code>. For best results deploy the proxy server and set its URL here (e.g. <code>https://your-proxy.example.com/fetch?url=</code>).</small>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
