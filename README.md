@@ -1,43 +1,10 @@
-# Pages Proxy Browser + Proxy Server
+# doh-cf-pages
+A very minimalist DNS-over-HTTPS proxy on Cloudflare Pages.
 
-This repository contains two parts:
+Clone this repo on your own GitHub account, sign up for a free [Cloudflare Pages](https://pages.cloudflare.com) account, create a new project, connect to GitHub, choose your cloned project and you're done. Use the address anywhere DoH is accepted (AdGuard, browsers secure DNS settings, YogaDNS, Intra, Nebulo etc). When a path is needed, use the [testpath](https://github.com/tina-hello/doh-cf-pages/tree/testpath) branch that will deploy to `youraddress.pages.dev/dns-query`
 
-1. A static frontend (host on GitHub Pages) — a simple "browser" with a URL bar that fetches pages through a proxy and renders them inside an iframe.
-2. A Node.js proxy server (can be deployed to Render/Vercel/Heroku/Docker) — fetches remote resources, strips/rewrites restrictive headers (CSP / X-Frame-Options) and returns the content with CORS headers so the Pages frontend can load it.
+Feel free to replace the `doh` variable inside [index.js](/functions/index.js) with [any DNS-over-HTTPS server you want](https://github.com/curl/curl/wiki/DNS-over-HTTPS). Confirmed to work with Cloudflare itself, Google, and NextDNS. The rarely supported [JSON API](https://developers.google.com/speed/public-dns/docs/doh/json) is available through the `dohjson` variable. Some providers use identical URL (Cloudlfare, NextDNS), some use `/resolve` instead of `/dns-query` for path (Google, AdGuard).
 
-Warning / security
-- This proxy forwards arbitrary URLs. Deploy only for testing or on private infrastructure. If you deploy publicly, add authentication, rate limiting, and usage controls.
-- Pages you load will execute scripts inside the iframe. Do not load sensitive pages or pages that require browser-stored secrets.
-- This project is for development/testing purposes only.
+Why? In case ISPs start banning known DoH providers, you can use your own proxy. Even if they block pages.dev wholesale, you can use your own domain, either hosted on Cloudflare, or any provider with CNAME record, including free subdomains from [FreeDNS](https://freedns.afraid.org/) (free account must login once each 6 months to maintain subdomain). Daily request on free tier is limited to 100 thousands, should be enough for most personal use, or even a family.
 
-Quick overview
-- Frontend: index.html, styles.css, script.js — host these on GitHub Pages.
-- Proxy server: server/server.js, server/package.json, server/Dockerfile — deploy this to a public URL like `https://your-proxy.example.com`. The frontend will call `https://your-proxy.example.com/fetch?url=<encoded>`.
-
-How it works
-- Frontend: you enter a URL → it requests the proxy like `/fetch?url=https%3A%2F%2Fexample.com`.
-- Proxy: fetches the remote page, removes headers that would block embedding, returns body and content-type. Proxy sets CORS headers (Access-Control-Allow-Origin: *).
-- Frontend: receives HTML, rewrites resource URLs (images, scripts, styles, srcset, inline CSS) to route through the proxy, injects a small script to route in-page navigation back to the parent (so clicking links uses the proxy), and renders via iframe.srcdoc.
-
-Local development
-1. Start proxy:
-   - cd server
-   - npm install
-   - npm start
-   Proxy runs on port 3000 by default.
-
-2. Open `index.html` in a static server (or push to GitHub Pages). For local dev you can use:
-   - npx http-server . (or python -m http.server)
-   - Change the Proxy box to: `http://localhost:3000/fetch?url=` (or edit script.js DEFAULT_PROXY)
-
-Deploying the proxy
-- Render / Heroku / Vercel: Use `server/server.js` (Node 18+). Add environment variables, and ensure the host exposes port from `process.env.PORT`.
-- Docker: `docker build -t pages-proxy ./server` then run.
-
-If you want hardened production:
-- Add an API key check (require a header or token).
-- Add express-rate-limit or a firewall.
-- Add logging and response size limits.
-- Validate and restrict allowed target hosts.
-
-If you'd like, I can provide a deployment-ready manifest for Render / Vercel / a GitHub Actions workflow to deploy the server automatically.
+This project is based on my [doh-cf-workers](https://github.com/tina-hello/doh-cf-workers), the difference is while you don't even need a GitHub account on the Workers version, custom domain must be hosted on Cloudflare.
